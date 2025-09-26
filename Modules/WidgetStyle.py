@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import  (
     QMenuBar,
     QTableWidget,
     QSpinBox,
+    QComboBox,
 )
 
 class WidgetStyle(QWidget):
@@ -223,6 +224,35 @@ class WidgetStyle(QWidget):
     }}
     """.format(**theme)
 
+    logTable = """
+        QTableWidget {
+            background-color: #2C2C2C;     /* Dark background */
+            color: #FFFFFF;                /* White text */
+            gridline-color: #444444;       /* Subtle grid lines */
+            border: 2px solid #616161;     /* Dark gray border */
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        QTableWidget::item {
+            selection-background-color: #FF6A13; /* KUKA Orange for selected rows */
+            selection-color: #FFFFFF;            /* White text when selected */
+        }
+
+        QHeaderView::section {
+            background-color: #424242;     /* Dark gray for headers */
+            color: #FFFFFF;                /* White text in headers */
+            padding: 6px;
+            border: 1px solid #616161;     /* Border between header cells */
+            font-weight: bold;
+        }
+
+        QTableCornerButton::section {
+            background-color: #424242;     /* Corner box matches header */
+            border: 1px solid #616161;
+        }
+    """
+
     # -------------------------------
     # SpinBox styles
     # -------------------------------
@@ -260,6 +290,43 @@ class WidgetStyle(QWidget):
     }}
     """.format(**theme)
 
+    # -------------------------------
+    # Combo box style
+    # -------------------------------
+    comboBoxDefault = """
+        QComboBox {{
+            background-color: {headerBgColor};
+            color: {textColor};
+            border: 2px solid {borderColor};
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 14px;
+            min-height: 28px;
+        }}
+        QComboBox:focus {{
+            border-color: {accentColor};
+            background-color: {focusColor};
+        }}
+        QComboBox::drop-down {{
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 20px;
+            border-left: 1px solid {borderColor};
+        }}
+        QComboBox::down-arrow {{
+            image: url("Modules/icons/down-arrow.png"); /* optional */
+            width: 12px;
+            height: 12px;
+        }}
+        QComboBox QAbstractItemView {{
+            border: 1px solid {borderColor};
+            selection-background-color: {accentColor};
+            selection-color: {textColor};
+            background-color: {headerBgColor};
+            padding: 2px;
+            outline: 0;
+        }}
+        """.format(**theme)
 
     @staticmethod
     def setErrorStyle(widget, exitOnError = True):
@@ -291,6 +358,8 @@ class WidgetStyle(QWidget):
             widget.setStyleSheet(WidgetStyle.tableDefault)
         elif isinstance(widget, QSpinBox):
             widget.setStyleSheet(WidgetStyle.spinboxDefault)
+        elif isinstance(widget, QComboBox):
+            widget.setStyleSheet(WidgetStyle.comboBoxDefault)
         else:
             if exitOnError:
                 raise TypeError(f"Unsupported widget type: {widget.__class__.__name__}")

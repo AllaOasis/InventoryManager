@@ -31,30 +31,34 @@ class AddItemDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Add Item")
+        # Localization
+        self.t = parent.t
+
+        self.setWindowTitle(self.t["add_item_title"])
         self.resize(350, 180)
         WidgetStyle.setDefaultStyle(self)
 
         # --- Inputs ---
         self.name_input = QLineEdit(self)
-        self.name_input.setPlaceholderText("Enter product name...")
+        self.name_input.setPlaceholderText(self.t["name"])
         WidgetStyle.setDefaultStyle(self.name_input)
 
         self.code_input = QLineEdit(self)
-        self.code_input.setPlaceholderText("Enter product code...")
+        self.code_input.setPlaceholderText(self.t["code"])
         WidgetStyle.setDefaultStyle(self.code_input)
 
         self.qty_input = QSpinBox(self)
         self.qty_input.setMinimum(0)
         self.qty_input.setValue(0)
+        self.qty_input.setMaximum(999999)
         WidgetStyle.setDefaultStyle(self.qty_input)
 
         # Labels
-        name_label = QLabel("Name:", self)
+        name_label = QLabel(f"{self.t['name']}:", self)
         WidgetStyle.setDefaultStyle(name_label)
-        code_label = QLabel("Code:", self)
+        code_label = QLabel(f"{self.t['code']}:", self)
         WidgetStyle.setDefaultStyle(code_label)
-        qty_label = QLabel("Quantity:", self)
+        qty_label = QLabel(f"{self.t['quantity']}:", self)
         WidgetStyle.setDefaultStyle(qty_label)
 
         # --- Form Layout ---
@@ -64,9 +68,9 @@ class AddItemDialog(QDialog):
         form_layout.addRow(qty_label, self.qty_input)
 
         # --- Buttons ---
-        confirm_button = QPushButton("Confirm", self)
+        confirm_button = QPushButton(self.t["confirm"], self)
         WidgetStyle.setDefaultStyle(confirm_button)
-        cancel_button = QPushButton("Cancel", self)
+        cancel_button = QPushButton(self.t["cancel"], self)
         WidgetStyle.setDefaultStyle(cancel_button)
 
         confirm_button.clicked.connect(self.on_confirm)
@@ -97,14 +101,14 @@ class AddItemDialog(QDialog):
         # Validation
         if not name:
             WidgetStyle.setErrorStyle(self.name_input)
-            self.feedback_label.setText("Please enter a product name.")
+            self.feedback_label.setText(self.t["enter_name_feedback"])
             return
         else:
             WidgetStyle.setDefaultStyle(self.name_input)
 
         if not code:
             WidgetStyle.setErrorStyle(self.code_input)
-            self.feedback_label.setText("Please enter a product code.")
+            self.feedback_label.setText(self.t["enter_code_feedback"])
             return
         else:
             WidgetStyle.setDefaultStyle(self.code_input)
@@ -112,7 +116,7 @@ class AddItemDialog(QDialog):
         # --- Call parent's add_data_row ---
         if self.parent() and hasattr(self.parent(), "add_data_row"):
             self.parent().add_data_row(name, code, qty)
-            self.feedback_label.setText(f"Added: {name} (Code: {code}, Qty: {qty})")
+            self.feedback_label.setText(self.t["added_feedback"].format(name=name, code=code, qty=qty))
             self.accept()
         else:
             self.feedback_label.setText("Error: Parent does not support add_data_row.")

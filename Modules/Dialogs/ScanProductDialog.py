@@ -27,11 +27,16 @@ from PyQt6.QtWidgets import  (
 )
 
 from ..WidgetStyle import WidgetStyle
+from ..Localization import translations
 
 class ScanProductDialog(QDialog):
     def __init__(self, parent=None, table=None):
         super().__init__(parent)
-        self.setWindowTitle("Scan Products")
+
+        # Localization
+        self.t = parent.t
+
+        self.setWindowTitle(self.t["scan_products_title"])
         self.resize(350, 180)
         WidgetStyle.setDefaultStyle(self)
 
@@ -41,12 +46,13 @@ class ScanProductDialog(QDialog):
         # --- Inputs ---
         self.quantity_input = QSpinBox()
         self.quantity_input.setMinimum(1)
+        self.quantity_input.setMaximum(999999)
         self.quantity_input.setValue(1)
-        self.quantity_input.setFixedWidth(80)
+        self.quantity_input.setFixedWidth(160)
         self.quantity_input.setStyleSheet(WidgetStyle.spinboxDefault)
 
         self.code_input = QLineEdit()
-        self.code_input.setPlaceholderText("Scan or type product code...")
+        self.code_input.setPlaceholderText(self.t["product_code"])
         WidgetStyle.setDefaultStyle(self.code_input)
 
         self.feedback_label = QLabel("")
@@ -54,9 +60,9 @@ class ScanProductDialog(QDialog):
         self.feedback_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # --- Buttons ---
-        confirm_button = QPushButton("Confirm")
+        confirm_button = QPushButton(self.t["confirm"])
         WidgetStyle.setDefaultStyle(confirm_button)
-        cancel_button = QPushButton("Cancel")
+        cancel_button = QPushButton(self.t["cancel"])
         WidgetStyle.setDefaultStyle(cancel_button)
 
         confirm_button.clicked.connect(self.on_confirm)
@@ -64,16 +70,18 @@ class ScanProductDialog(QDialog):
 
         # --- Layout ---
         form_layout = QFormLayout()
-        form_layout.addRow("Quantity:", self.quantity_input)
-        form_layout.addRow("Product Code:", self.code_input)
+        quantity_label = QLabel(self.t["quantity"] + ":", self)
+        WidgetStyle.setDefaultStyle(quantity_label)
+        form_layout.addRow(quantity_label, self.quantity_input)
+        code_label = QLabel(self.t["product_code"] + ":", self)
+        WidgetStyle.setDefaultStyle(code_label)
+        form_layout.addRow(code_label, self.code_input)
         form_layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         form_layout.setFormAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
 
         button_layout = QHBoxLayout()
-        button_layout.addStretch()
         button_layout.addWidget(confirm_button)
         button_layout.addWidget(cancel_button)
-        button_layout.addStretch()
         button_layout.setSpacing(15)
 
         main_layout = QVBoxLayout()
