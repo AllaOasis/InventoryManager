@@ -155,11 +155,11 @@ class EditItemDialog(QDialog):
                     self.parent_app.data[i] = (new_name, new_code, str(new_qty))
                     from Modules.Logger import Logger
                     from Modules.Storage import Storage
-                    Logger.log(f"Edited item: {old_name} ({old_code}) → {new_name} ({new_code}, Qty: {new_qty})")
+                    Logger.log(self.t["item_updated"].format(name=new_name, code=new_code, qty=new_qty))
                     self.parent_app.load_logs()
                     self.parent_app.populate_table(self.parent_app.data)
                     Storage.save(self.parent_app.data)
                     break
 
-        self.feedback_label.setText(f"{self.t['name']} updated: {new_name} ({new_code})")
+        self.feedback_label.setText(self.t["name_updated"].format(new_name=new_name, new_code=new_code))
         self.accept()

@@ -335,7 +335,7 @@ class InventoryApp(QMainWindow):
         for i, (name, code, qty) in enumerate(self.data):
             if code == edited_code:
                 self.data[i] = (name, code, str(new_qty))
-                Logger.log(self.t["product_updated"])
+                Logger.log(self.t["product_updated"].format(name=name, qty=new_qty))
                 self.load_logs()
                 Storage.save(self.data)
                 break
@@ -348,7 +348,7 @@ class InventoryApp(QMainWindow):
     def add_data_row(self, name: str, code: str, qty: int | str = 0):
         row = (name, code, str(qty))
         self.data.append(row)
-        Logger.log(self.t["product_added"])
+        Logger.log(self.t["product_added"].format(name=name,code=code, qty=qty))
         self.load_logs()
         Storage.save(self.data)
         self.populate_table(self.data)

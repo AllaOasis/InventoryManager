@@ -57,12 +57,15 @@ translations = {
         "confirm_removal": "Confirm Removal",
         "placeholder_code": "Enter product code to confirm",
         "select_placeholder": "-- Select Item --",
+        "item_removed": "Removed item: Code {selected_code}",
 
         # Item Edited
         "edit_item_title": "Edit Item",
         "select_feedback": "Please select an item to edit.",
         "name_empty": "Name cannot be empty.",
         "code_empty": "Code cannot be empty.",
+        "item_updated": "Edited item: {old_name} ({old_code}) → {new_name} ({new_code}, Quantity: {new_qty})",
+        "name_updated": "Name Updated: {new_name} ({new_code})",
 
         # Credits
         "credits": "Credits",
@@ -124,12 +127,15 @@ translations = {
         "confirm_removal": "Potrdi odstranitev",
         "placeholder_code": "Vnesite kodo izdelka za potrditev",
         "select_placeholder": "-- Izberi izdelek --",
+        "item_removed": "Izdelek Odstranjen: Koda {selected_code}",
 
         # Item Edited
         "edit_item_title": "Uredi izdelek",
         "select_feedback": "Prosimo, izberite izdelek za urejanje.",
         "name_empty": "Ime ne sme biti prazno.",
         "code_empty": "Koda ne sme biti prazna.",
+        "item_updated": "Urejen Izdelek: {old_name} ({old_code}) → {new_name} ({new_code}, Količina: {new_qty})",
+        "name_updated": "Ime Posodobljeno: {new_name} ({new_code})",
 
         # Credits
         "credits": "Avtorji",

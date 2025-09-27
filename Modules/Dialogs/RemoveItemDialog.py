@@ -121,7 +121,9 @@ class RemoveItemDialog(QDialog):
 
             # Log the removal
             from Modules.Logger import Logger
-            Logger.log(f"Removed item: Code {selected_code}")
+            Logger.log(self.t["item_removed"].format(selected_code=selected_code))
             self.parent_app.load_logs()
 
             self.accept()
+
+            #formating 
