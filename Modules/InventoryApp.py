@@ -15,6 +15,7 @@
 #  - PyQt6 (GPLv3) for the graphical user interface
 
 import json
+import base64
 from pathlib import Path
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
@@ -32,18 +33,19 @@ from PyQt6.QtWidgets import  (
     QStackedLayout
 )
 
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt
+import datetime
 from pathlib import Path
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 from Modules.Logger import Logger
-from Modules.Storage import Storage
-from Modules.Localization import translations
+from Modules.SQLManager import SQLManager
 from Modules.WidgetStyle import WidgetStyle
+from Modules.Localization import translations
 from Modules.Dialogs.AddItemDialog import AddItemDialog
 from Modules.Dialogs.EditItemDialog import EditItemDialog
 from Modules.Dialogs.RemoveItemDialog import RemoveItemDialog
 from Modules.Dialogs.ScanProductDialog import ScanProductDialog
-
+from Modules.Dialogs.DatabaseConfigDialog import DatabaseConfigDialog
 
 class InventoryApp(QMainWindow):
     def __init__(self, lang="en"):
@@ -113,11 +115,15 @@ class InventoryApp(QMainWindow):
         self.language_menu.addAction(self.slovene)
         self.language_menu.addAction(self.english)
 
+        self.database = QAction(self.t["database"], self)
+        self.settings_menu.addAction(self.database)
+        self.database.triggered.connect(self.database_config_dialog)
+
+
         # Credits menu
         self.credits_action = QAction(self.t["credits"], self)
         self.credits_action.triggered.connect(self.show_credits_dialog)
         menubar.addAction(self.credits_action)
-
 
     # -------------------------
     # Dialogs
@@ -149,7 +155,12 @@ class InventoryApp(QMainWindow):
             self.t["credits_content"],
         )
 
-
+    def database_config_dialog(self):
+        dialog = DatabaseConfigDialog(self)
+        dialog.exec()
+        self.update_table()
+        self.load_logs()
+    
     # -------------------------
     # Data / Table Initialization
     # -------------------------
@@ -160,7 +171,7 @@ class InventoryApp(QMainWindow):
         self.table.setHorizontalHeaderLabels([self.t["name"], self.t["code"], self.t["quantity"]])
         self.table.setSortingEnabled(True)
         self.get_data()
-        self.populate_table(self.data)
+        self.update_table()
 
     # -------------------------
     # Stacked Layout: Welcome / Inventory / Logs
@@ -299,14 +310,22 @@ class InventoryApp(QMainWindow):
     # Data Handling
     # -------------------------
     def get_data(self):
-        self.data = Storage.open()
+        print(self.data)
+        self.data = SQLManager.singleton().select_items()
+        print(self.data)
+        if self.data is None: self.data = []
+        print(self.data)
+
+    def update_table(self):
+        self.get_data()
+        self.populate_table(self.data)
 
     def populate_table(self, data, location=None):
         if location is None:
             location = self.table
         location.blockSignals(True)
         location.setRowCount(len(data))
-        for row, (name, code, qty) in enumerate(data):
+        for row, (id, name, code, qty) in enumerate(data):
             name_item = QTableWidgetItem(name)
             code_item = QTableWidgetItem(code)
             qty_item = QTableWidgetItem(str(qty))
@@ -332,12 +351,12 @@ class InventoryApp(QMainWindow):
             self.table.item(row, col).setText(str(old_qty))
             self.table.blockSignals(False)
             return
-        for i, (name, code, qty) in enumerate(self.data):
+        for i, (id, name, code, qty) in enumerate(self.data):
             if code == edited_code:
-                self.data[i] = (name, code, str(new_qty))
+                self.data[i] = (id, name, code, str(new_qty))
+                SQLManager.singleton().update_item(id, name, code, new_qty)
                 Logger.log(self.t["product_updated"].format(name=name, qty=new_qty))
                 self.load_logs()
-                Storage.save(self.data)
                 break
 
     def search_items(self):
@@ -350,32 +369,24 @@ class InventoryApp(QMainWindow):
         self.data.append(row)
         Logger.log(self.t["product_added"].format(name=name,code=code, qty=qty))
         self.load_logs()
-        Storage.save(self.data)
-        self.populate_table(self.data)
+        SQLManager.singleton().add_item(name, code, qty)
+        self.update_table()
 
     # -------------------------
     # Logs
     # -------------------------
     def load_logs(self):
-        self.all_logs = []
-        log_file = Path("data/inventory.log")
-        if not log_file.exists():
-            return
-        with log_file.open("r", encoding="utf-8") as f:
-            for line in f:
-                if "," in line:
-                    timestamp, message = line.strip().split(",", 1)
-                else:
-                    timestamp, message = "Unknown", line.strip()
-                self.all_logs.append((timestamp, message))
+        self.all_logs = SQLManager.singleton().select_logs()
         self.populate_log_table(self.all_logs)
 
     def populate_log_table(self, logs):
         self.log_table.blockSignals(True)
         self.log_table.setRowCount(len(logs))
-        for row, (timestamp, message) in enumerate(logs):
-            self.log_table.setItem(row, 0, QTableWidgetItem(timestamp))
-            self.log_table.setItem(row, 1, QTableWidgetItem(message))
+        for row, (id, user, timestamp, message) in enumerate(logs):
+            # convert datetime to string
+            timestamp_str = timestamp.strftime("%H:%M:%S %d-%m-%Y") if isinstance(timestamp, datetime.datetime) else str(timestamp)
+            self.log_table.setItem(row, 0, QTableWidgetItem(timestamp_str))
+            self.log_table.setItem(row, 1, QTableWidgetItem(str(message)))
         self.log_table.blockSignals(False)
 
     def filter_logs(self, text):
@@ -417,6 +428,7 @@ class InventoryApp(QMainWindow):
         self.slovene.setText(self.t["si"])
         self.english.setText(self.t["en"])
         self.credits_action.setText(self.t["credits"])
+        self.database.setText(self.t["database"])
 
         # --- Welcome Page ---
         self.welcome_label.setText(
@@ -442,11 +454,4 @@ class InventoryApp(QMainWindow):
 
         # --- Table headers ---
         self.table.setHorizontalHeaderLabels([self.t["name"], self.t["code"], self.t["quantity"]])
-        self.save_language()
-
-    def save_language(self):
-        CONFIG_FILE = Path("data/config.json")
-        CONFIG_FILE.parent.mkdir(exist_ok=True)  # make sure 'data/' exists
-        config = {"language": self.lang}
-        with CONFIG_FILE.open("w", encoding="utf-8") as f:
-            json.dump(config, f)
+        SQLManager.save_config("language", self.lang)

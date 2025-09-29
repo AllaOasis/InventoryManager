@@ -20,17 +20,17 @@ import json
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication
 from Modules.InventoryApp import InventoryApp
+from Modules.SQLManager import SQLManager
 
 def load_language() -> str:
-    CONFIG_FILE = Path("data/config.json")
-    if CONFIG_FILE.exists():
-        with CONFIG_FILE.open("r", encoding="utf-8") as f:
-            config = json.load(f)
-            return config.get("language", "en")
-    return "en"
+    lang = SQLManager.load_config("language")
+    if lang is None:
+        lang = "en"
+    return lang
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = InventoryApp(lang=load_language())
     window.show()
     sys.exit(app.exec())
+

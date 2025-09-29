@@ -69,7 +69,21 @@ translations = {
 
         # Credits
         "credits": "Credits",
-        "credits_content": "Inventory Manager\n\nDeveloped by Aljaž Lackovič\n© 2025"
+        "credits_content": "Inventory Manager\n\nDeveloped by Aljaž Lackovič\n© 2025",
+        
+        # Database
+        "titleDB": "Database Configuration",
+        "host": "Host / IP:",
+        "port": "Port:",
+        "database": "Database:",
+        "username": "Username:",
+        "password": "Password:",
+        "save": "Save",
+        "test_connection": "Test Connection",
+        "cancel": "Cancel",
+        "feedback_empty": "",
+        "test_success": "Connection successful ✅",
+        "test_failed": "Connection failed ❌",
     },
     "si": {
         # Main UI
@@ -140,5 +154,19 @@ translations = {
         # Credits
         "credits": "Avtorji",
         "credits_content": "Upravitelj zalog\n\nRazvil Aljaž Lackovič\n© 2025",
+
+        # Database
+        "titleDB": "Nastavitve baze podatkov",
+        "host": "Gostitelj / IP:",
+        "port": "Vrata:",
+        "database": "Baza podatkov:",
+        "username": "Uporabniško ime:",
+        "password": "Geslo:",
+        "save": "Shrani",
+        "test_connection": "Preizkusi povezavo",
+        "cancel": "Prekliči",
+        "feedback_empty": "",
+        "test_success": "Povezava uspešna ✅",
+        "test_failed": "Povezava neuspešna ❌",
     }
 }

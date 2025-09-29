@@ -27,8 +27,9 @@ from PyQt6.QtWidgets import (
 )
 
 from ..Logger import Logger
-from ..Storage import Storage
 from ..WidgetStyle import WidgetStyle
+from ..SQLManager import SQLManager
+from Modules.Logger import Logger
 
 class EditItemDialog(QDialog):
     def __init__(self, parent=None):
@@ -49,8 +50,8 @@ class EditItemDialog(QDialog):
         self.item_selector.setStyleSheet(WidgetStyle.comboBoxDefault)
         self.item_selector.addItem(f"-- {self.t['select_item']} --")
         if self.parent_app:
-            for name, code, qty in self.parent_app.data:
-                self.item_selector.addItem(f"{name} ({code})", (name, code, qty))
+            for id, name, code, qty in self.parent_app.data:
+                self.item_selector.addItem(f"{name} ({code})", (id, name, code, qty))
 
         self.item_selector.currentIndexChanged.connect(self.load_item_data)
 
@@ -115,7 +116,7 @@ class EditItemDialog(QDialog):
             return
 
         data = self.item_selector.itemData(index)
-        name, code, qty = data
+        id, name, code, qty = data
         self.name_input.setText(name)
         self.code_input.setText(code)
         self.qty_input.setValue(int(qty))
@@ -145,21 +146,15 @@ class EditItemDialog(QDialog):
         else:
             WidgetStyle.setDefaultStyle(self.code_input)
 
-        # Update parent data
+        # Update Data
         old_data = self.item_selector.itemData(index)
-        old_name, old_code, old_qty = old_data
+        id, old_name, old_code, old_qty = old_data
+        SQLManager.singleton().update_item(id, new_name, new_code, new_qty)
 
         if self.parent_app:
-            for i, (name, code, qty) in enumerate(self.parent_app.data):
-                if code == old_code:
-                    self.parent_app.data[i] = (new_name, new_code, str(new_qty))
-                    from Modules.Logger import Logger
-                    from Modules.Storage import Storage
-                    Logger.log(self.t["item_updated"].format(name=new_name, code=new_code, qty=new_qty))
-                    self.parent_app.load_logs()
-                    self.parent_app.populate_table(self.parent_app.data)
-                    Storage.save(self.parent_app.data)
-                    break
+            Logger.log(message=self.t["item_updated"].format(new_name=new_name, new_code=new_code, new_qty=new_qty, old_code=old_code, old_name=old_name))
+            self.parent_app.load_logs()
+            self.parent_app.update_table()
 
         self.feedback_label.setText(self.t["name_updated"].format(new_name=new_name, new_code=new_code))
         self.accept()

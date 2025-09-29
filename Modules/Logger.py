@@ -16,38 +16,38 @@
 
 
 import csv
+import json
+import base64
 from pathlib import Path
 from datetime import datetime
+from Modules.SQLManager import SQLManager
 
 class Logger:
     @staticmethod
-    def log(message: str, FILE: Path = None):
-        FILE = FILE or Path("data/inventory.log")
-
-        # Ensure the parent folder exists
-        FILE.parent.mkdir(parents=True, exist_ok=True)
-
+    def log(message: str, user_id="Server", FILE: Path = None):
         try:
-            with FILE.open("a", newline="", encoding="utf-8") as file:
-                writer = csv.writer(file)
-                timestamp = datetime.now().strftime("%H:%M:%S %d-%m-%Y")
-                writer.writerow([timestamp, message])
-            print(f"LOG: {message}")  # still echo to console
+            CONFIG_FILE = Path("data/config.json")
+            if not CONFIG_FILE.exists():
+                return None
+
+            with CONFIG_FILE.open("r", encoding="utf-8") as f:
+                config = json.load(f)
+
+            encoded_value = config.get("user")
+            if encoded_value is None:
+                return None
+
+            # Decode value
+            user_id = base64.b64decode(encoded_value.encode()).decode()
+
+            SQLManager.singleton().add_log(user_id=user_id, message=message)
         except Exception as e:
             print(f"Error writing log: {e}")
 
     @staticmethod
     def read(FILE: Path = None):
-        FILE = FILE or Path("data/inventory.log")
-
-        if not FILE.exists():
-            print(f"No log file found: {FILE}")
-            return []
-
         try:
-            with FILE.open("r", newline="", encoding="utf-8") as file:
-                reader = csv.reader(file)
-                return [(timestamp, message) for timestamp, message in reader]
+            return SQLManager.singleton().select_logs()
         except Exception as e:
             print(f"Error reading log: {e}")
             return []

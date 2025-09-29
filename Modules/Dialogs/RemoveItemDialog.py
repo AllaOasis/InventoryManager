@@ -90,13 +90,13 @@ class RemoveItemDialog(QDialog):
         self.item_selector.clear()
         self.item_selector.addItem(self.t["select_placeholder"])
         if self.parent_app and hasattr(self.parent_app, "data"):
-            for name, code, qty in self.parent_app.data:
-                self.item_selector.addItem(f"{name} ({code})", code)
+            for id, name, code, qty in self.parent_app.data:
+                self.item_selector.addItem(f"{name} ({code})", (id, code))
 
     def on_confirm(self):
         """Remove the selected item if code matches confirmation input."""
         selected_index = self.item_selector.currentIndex()
-        selected_code = self.item_selector.itemData(selected_index)
+        id, selected_code = self.item_selector.itemData(selected_index)
         confirm_code = self.confirm_code_input.text().strip()
 
         if confirm_code != selected_code:
@@ -108,22 +108,19 @@ class RemoveItemDialog(QDialog):
 
         # Remove the item from parent data
         if self.parent_app and hasattr(self.parent_app, "data"):
-            self.parent_app.data = [
-                (name, code, qty)
-                for name, code, qty in self.parent_app.data
-                if code != selected_code
-            ]
+            from Modules.SQLManager import SQLManager
+            index = self.item_selector.currentIndex()
+            data = self.item_selector.itemData(index)
+            id, code = data
+            SQLManager.singleton().remove_item(id)
+            print(id)
 
             # Save changes and refresh table
-            from Modules.Storage import Storage
-            Storage.save(self.parent_app.data)
-            self.parent_app.populate_table(self.parent_app.data)
+            self.parent_app.update_table()
 
             # Log the removal
             from Modules.Logger import Logger
             Logger.log(self.t["item_removed"].format(selected_code=selected_code))
             self.parent_app.load_logs()
-
+            
             self.accept()
-
-            #formating 
