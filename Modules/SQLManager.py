@@ -94,12 +94,13 @@ class SQLManager:
         
     def config_connect(self):
         self.connect(
-            SQLManager.load_config("host"),
-            SQLManager.load_config("user"),
-            SQLManager.load_config("password"),
-            SQLManager.load_config("database"),
-            SQLManager.load_config("port")
+            SQLManager.load_config("host") or "",
+            SQLManager.load_config("user") or "",
+            SQLManager.load_config("password") or "",
+            SQLManager.load_config("database") or "",
+            SQLManager.load_config("port") or 3306
         )
+
 
     @staticmethod
     def connection_test(HOST, USER, PASSWORD, DATABASE, PORT=3306):
