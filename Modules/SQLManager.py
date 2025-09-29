@@ -29,6 +29,7 @@ class SQLManager:
         """Static method to return the singleton instance."""
         if SQLManager.SELF is None:  # Check if the singleton has been created
             SQLManager.SELF = SQLManager()  # Create it if it doesn't exist
+            SQLManager.singleton().config_connect() # Auto-Connect feature
         return SQLManager.SELF  # Return the singleton instance
 
     def __init__(self, HOST="", USER="", PASSWORD="", DATABASE="", PORT=3306):
